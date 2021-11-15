@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 	Uint32 startTime = 0;
 	bool running = true;
 	int mousePos[2] = { 0,0 };
-	double zoom = 0;
+	double zoom = 1;
 	
 	
 	while (running) {
@@ -32,25 +32,20 @@ int main(int argc, char* argv[]) {
 			}
 			if (event.type == SDL_MOUSEWHEEL) {
 				if (event.wheel.y > 0) {//scroll up
-					zoom += 0.1;
+					zoom += 1;
 				}
-				if (event.wheel.y < 0) {
-					zoom-=0.1;
+				if (event.wheel.y < 0 && zoom>1) {
+					zoom-=1;
 				}
+				std::cout << zoom << endl;
 			}
 		}
-		std::cout << zoom << endl;
+		
 		buttons = SDL_GetMouseState(&mousePos[xPos], &mousePos[yPos]);
 		if (buttons & SDL_BUTTON_LMASK){
 			Draw(renderer, mousePos[xPos], mousePos[yPos], zoom);
-			
 		}
-		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
-		SDL_RenderClear(renderer);
-		SDL_RenderPresent(renderer);
-		
 	}
-
 	return 0;
 }
 
@@ -65,10 +60,12 @@ double mandelbrot(complex<double> c) {
 }
 
 void Draw(SDL_Renderer* renderer, int xPos, int yPos, int zoom) {
-	xPos = xPos - 400;
-	yPos = yPos - 400;
+	SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+	SDL_RenderClear(renderer);
+	xPos = xPos-400;
+	yPos = yPos-400;
 	double zoomLevel = zoom;
-	double resolution = 0.008 /zoomLevel;
+	double resolution = 0.009 /(zoomLevel);
 	double t = -2;
 	double m = -2;
 	double lowerVertBound = -2;
@@ -78,14 +75,12 @@ void Draw(SDL_Renderer* renderer, int xPos, int yPos, int zoom) {
 	double upperHorizBound = 2;
 
 	while (t < upperHorizBound) {
-
-		
 		t += resolution;
 		m = lowerVertBound;
 		while (m < upperVertBound) {
 			m += resolution;
 			
-			if (t * zoomLevel * 200 + xPos + 400 > 0 and t * zoomLevel * 200 + xPos + 400 < 800) {
+			if (t * zoomLevel * 200 + xPos + 400 > 0 && t * zoomLevel * 200 + xPos + 400 < 800 && m * zoomLevel * 200 + yPos + 400 > 0 && m * zoomLevel * 200 + yPos + 400 < 800) {
 				complex<double> c(t, m);
 				double num = mandelbrot(c);
 				//std::cout << num << endl;
