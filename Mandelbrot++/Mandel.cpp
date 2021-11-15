@@ -7,7 +7,7 @@ using namespace std;
 
 double mandelbrot(complex<double> c);
 
-void Draw( SDL_Renderer* renderer, int xPos, int yPos);
+void Draw( SDL_Renderer* renderer, int xPos, int yPos, int zoom);
 Uint32 buttons;
 int main(int argc, char* argv[]) {
 	enum coords {
@@ -21,6 +21,7 @@ int main(int argc, char* argv[]) {
 	Uint32 startTime = 0;
 	bool running = true;
 	int mousePos[2] = { 0,0 };
+	double zoom = 0;
 	
 	
 	while (running) {
@@ -29,22 +30,27 @@ int main(int argc, char* argv[]) {
 			if (event.type == SDL_QUIT) {
 				SDL_Quit();
 			}
+			if (event.type == SDL_MOUSEWHEEL) {
+				if (event.wheel.y > 0) {//scroll up
+					zoom += 0.1;
+				}
+				if (event.wheel.y < 0) {
+					zoom-=0.1;
+				}
+			}
 		}
-		
+		std::cout << zoom << endl;
 		buttons = SDL_GetMouseState(&mousePos[xPos], &mousePos[yPos]);
 		if (buttons & SDL_BUTTON_LMASK){
-			Draw(renderer, mousePos[xPos], mousePos[yPos]);
+			Draw(renderer, mousePos[xPos], mousePos[yPos], zoom);
 			
 		}
-		
+		SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
 		SDL_RenderClear(renderer);
 		SDL_RenderPresent(renderer);
 		
 	}
-	totalTime = SDL_GetTicks();
-	std::cout << "Miliseconds for completion: " << totalTime << endl;
-	SDL_Delay(100000);
-	std::cout << "DONE" << endl;
+
 	return 0;
 }
 
@@ -58,11 +64,11 @@ double mandelbrot(complex<double> c) {
 	return count;
 }
 
-void Draw(SDL_Renderer* renderer, int xPos, int yPos) {
+void Draw(SDL_Renderer* renderer, int xPos, int yPos, int zoom) {
 	xPos = xPos - 400;
 	yPos = yPos - 400;
-	double zoomLevel = 3;
-	double resolution = 0.006 * (zoomLevel/3.5);
+	double zoomLevel = zoom;
+	double resolution = 0.008 /zoomLevel;
 	double t = -2;
 	double m = -2;
 	double lowerVertBound = -2;
@@ -79,10 +85,10 @@ void Draw(SDL_Renderer* renderer, int xPos, int yPos) {
 		while (m < upperVertBound) {
 			m += resolution;
 			
-			//if (t * zoomLevel * 200 + 400 > 0) {
+			if (t * zoomLevel * 200 + xPos + 400 > 0 and t * zoomLevel * 200 + xPos + 400 < 800) {
 				complex<double> c(t, m);
 				double num = mandelbrot(c);
-
+				//std::cout << num << endl;
 				if (num < 20) {
 					//screen.set_at((int(zoomLevel * t * 200 + 400), int(zoomLevel * m * 200 + 400)), (num * 3, num * 6, num * 12))
 					SDL_SetRenderDrawColor(renderer, num * 3, num * 6, num * 12, 255);
@@ -102,7 +108,7 @@ void Draw(SDL_Renderer* renderer, int xPos, int yPos) {
 					SDL_RenderDrawPoint(renderer, int(zoomLevel * t * 200 + 400) + xPos, int(zoomLevel * m * 200 + 400) + yPos);
 				}
 				//SDL_RenderPresent(renderer);
-			//}
+			}
 		}
 		SDL_RenderPresent(renderer);
 	}
